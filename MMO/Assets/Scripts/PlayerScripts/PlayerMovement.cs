@@ -17,10 +17,12 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask whatIsGround;
 
 
+    float timeToAttack = 0;
     private float jumpTimeCounter;
     public float jumpTime;
     private bool isJumping;
     private bool doubleJump;
+    bool canAttack = false;
 
     private Animator anim;
 
@@ -47,21 +49,29 @@ public class PlayerMovement : MonoBehaviour
         verifyIfIsGrounded();
         verifyMovement();
         takeDamage(dmgdonetest);
-        
+
+        Debug.LogError(isGrounded);
+
+        if (anim.GetCurrentAnimatorStateInfo(0).IsName("attack"))
+            anim.SetBool("canAttack", false);
+
 
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+
+        Debug.LogError(collision.collider.name+ " " + collision.collider.tag);
+
         if (collision.gameObject.tag == "EnemySword")
         {
             CurrentHealth -= 5;
             Debug.Log("Ti-a dat fraieru");
         }
-        if (collision.gameObject.tag == "Ground")
+        if (collision.collider.tag == "Ground")
         {
-
-            Debug.Log("GroundCheckPlayer");
+          //  isGrounded = true;
+          //  Debug.Log("GroundCheckPlayer");
         }
         if(collision.gameObject.tag == "EnemyArrow")
         {
@@ -79,45 +89,49 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isGrounded == true && Input.GetKeyDown(KeyCode.UpArrow))
         {
-            anim.SetTrigger("takeOff");
+
+            Debug.LogError("Should start jumping");
+
+            anim.SetBool("isJumping", true);
 
             isJumping = true;
             jumpTimeCounter = jumpTime;
             rb.velocity = Vector2.up * jumpForce;
         }
 
-        if (isGrounded == true)
-        {
-            doubleJump = false;
-            anim.SetBool("isJumping", false);
-        }
         else
         {
-            anim.SetBool("isJumping", true);
+            anim.SetBool("isJumping", false);
         }
 
-        if (Input.GetKey(KeyCode.UpArrow) && isJumping == true)
+        if(isJumping)
         {
-            if (jumpTimeCounter > 0)
-            {
-                rb.velocity = Vector2.up * jumpForce;
-                jumpTimeCounter -= Time.deltaTime;
-            }
-            else
-            {
-                isJumping = false;
-            }
+            rb.velocity = Vector2.up * jumpForce;
         }
 
+        //if (Input.GetKey(KeyCode.UpArrow) && isJumping == true)
+        //{
+        //    if (jumpTimeCounter > 0)
+        //    {
+        //        rb.velocity = Vector2.up * jumpForce;
+        //        jumpTimeCounter -= Time.deltaTime;
+        //    }
+        //    else
+        //    {
+        //        isJumping = false;
+        //    }
+        //}
+
+        
+        //attack
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            anim.SetTrigger("attack");
+            anim.SetBool("canAttack", true);
+            timeToAttack = Time.time;
+
         }
 
-        if (Input.GetKeyUp(KeyCode.UpArrow))
-        {
-            isJumping = false;
-        }
+
 
         if (isGrounded == false && doubleJump == false && Input.GetKeyDown(KeyCode.UpArrow))
         {
